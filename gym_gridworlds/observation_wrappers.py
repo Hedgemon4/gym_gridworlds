@@ -1,7 +1,9 @@
 import numpy as np
 import gymnasium
+from numpy import signedinteger
+from numpy._typing import _32Bit, _64Bit, NDArray
 
-from gym_gridworlds.gridworld import REWARDS, GOOD, GOOD_SMALL
+from gym_gridworlds.gridworld import REWARDS, GOOD, GOOD_SMALL, WALL
 
 
 class AddGoalWrapper(gymnasium.ObservationWrapper):
@@ -31,7 +33,6 @@ class AddGoalWrapper(gymnasium.ObservationWrapper):
         self.observation_space = gymnasium.spaces.MultiDiscrete([size, size])
         self.goal_pos = None
 
-
     def reset(self, **kwargs):
         obs, info = self.env.reset(**kwargs)
         goal_location = np.argwhere(self.env.unwrapped.grid == GOOD)
@@ -43,6 +44,10 @@ class AddGoalWrapper(gymnasium.ObservationWrapper):
 
     def observation(self, obs):
         return [obs, self.goal_pos]
+
+    @property
+    def valid_goal_indices(self) -> NDArray[np.int32]:
+        return np.ravel_multi_index(np.argwhere(self.env.unwrapped.grid != WALL).T, (self._rows,  self._cols)).astype(np.int32)
 
 
 class CoordinateWrapper(gymnasium.ObservationWrapper):

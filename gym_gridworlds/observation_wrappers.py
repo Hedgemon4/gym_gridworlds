@@ -45,7 +45,7 @@ class AddGoalWrapper(gymnasium.ObservationWrapper):
 
     @property
     def valid_goal_indices(self) -> NDArray[np.int32]:
-        return np.ravel_multi_index(np.argwhere(self.env.unwrapped.grid != WALL).T, (self._rows,  self._cols)).astype(np.int32)
+        return np.ravel_multi_index(np.argwhere(self.env.unwrapped.grid != WALL).T, (self._n_rows,  self._n_cols)).astype(np.int32)
 
 
 class CoordinateWrapper(gymnasium.ObservationWrapper):

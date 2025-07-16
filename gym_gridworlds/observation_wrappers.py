@@ -38,6 +38,7 @@ class AddGoalWrapper(gymnasium.ObservationWrapper):
         self._n_cols = env.unwrapped.n_cols
         size = self._n_rows * self._n_cols
         self.observation_space = gymnasium.spaces.MultiDiscrete([size, size])
+        setattr(self.unwrapped, "valid_goal_indices", self.valid_goal_indices)
 
     def observation(self, obs):
         goal = np.argwhere(self.env.unwrapped.grid == GOOD)[0]

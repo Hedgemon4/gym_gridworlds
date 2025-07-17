@@ -38,15 +38,20 @@ class AddGoalWrapper(gymnasium.ObservationWrapper):
         self._n_cols = env.unwrapped.n_cols
         size = self._n_rows * self._n_cols
         self.observation_space = gymnasium.spaces.MultiDiscrete([size, size])
-        setattr(self.unwrapped, "valid_goal_indices", self.valid_goal_indices)
 
     def observation(self, obs):
         goal = np.argwhere(self.env.unwrapped.grid == GOOD)[0]
         return [obs, np.ravel_multi_index(goal, (self._n_rows, self._n_cols))]
 
+
+class ValidGoalWrapper(gymnasium.Wrapper):
+    def __init__(self, env):
+        super().__init__(env)
+        setattr(self.unwrapped, "valid_goal_indices", self.valid_goal_indices)
+
     @property
     def valid_goal_indices(self) -> NDArray[np.int32]:
-        return np.ravel_multi_index(np.argwhere(self.env.unwrapped.grid != WALL).T, (self._n_rows,  self._n_cols)).astype(np.int32)
+        return np.ravel_multi_index(np.argwhere(self.env.unwrapped.grid != WALL).T, (self.env.unwrapped.n_rows,  self.env.unwrapped.n_cols)).astype(np.int32)
 
 
 class CoordinateWrapper(gymnasium.ObservationWrapper):

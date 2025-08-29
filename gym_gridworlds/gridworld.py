@@ -335,6 +335,7 @@ class Gridworld(gym.Env):
         no_stay: Optional[bool] = False,
         distance_reward: Optional[bool] = False,
         render_mode: Optional[str] = None,
+        tile_goal: Optional[bool] = False,
         random_action_prob: Optional[float] = 0.0,
         reward_noise_std: Optional[float] = 0.0,
         nonzero_reward_noise_std: Optional[float] = 0.0,
@@ -343,6 +344,7 @@ class Gridworld(gym.Env):
         **kwargs,
     ):
         self.random_goals = random_goals
+        self.tile_goal = tile_goal
         self.start_pos = start_pos
         self.grid_key = grid
         self.grid = np.asarray(GRIDS[self.grid_key])
@@ -400,9 +402,9 @@ class Gridworld(gym.Env):
                 )  # note that the random position can be also a wall or a pit
         return np.ravel_multi_index(pos, (self.n_rows, self.n_cols))
 
-    def reset(self, seed: int = None, **kwargs):
+    def reset(self, seed: int = None, options=None ,**kwargs):
         super().reset(seed=seed, **kwargs)
-        self._reset(seed, **kwargs)
+        self._reset(seed, options, **kwargs)
         if self.render_mode is not None and self.render_mode == "human":
             self.render()
         return self.get_state(), {}
@@ -433,10 +435,34 @@ class Gridworld(gym.Env):
             new_goal = allowed_tiles[self.np_random.integers(n_allowed)]
             self.grid[tuple(new_goal)] = original_grid[tuple(goal)]
 
-    def _reset(self, seed: int = None, **kwargs):
+    def _tile_goal(self, tile_index, tile_length, tile_offset ):
+        goal_states = self._states_in_tile(tile_index, tile_length, tile_offset)
+        for goal_state in goal_states:
+            if not self.grid[goal_state[0], goal_state[1]] == WALL:
+                self.grid[goal_state[0], goal_state[1]] = GOOD
+
+    def _states_in_tile(self, tile_index, tile_length, offset=0):
+        side = self.grid.shape[0]
+        tiles_per_side = np.ceil(side / tile_length)
+        tile_row, tile_col = divmod(tile_index, tiles_per_side)
+        tile_row, tile_col = int(tile_row), int(tile_col)
+
+        rows = range(tile_row * tile_length + offset,
+                     (tile_row + 1) * tile_length + offset)
+        cols = range(tile_col * tile_length + offset,
+                     (tile_col + 1) * tile_length + offset)
+
+        states = np.array([[r, c]
+                           for r in rows for c in cols
+                           if 0 <= r < side and 0 <= c < side])
+        return states
+
+    def _reset(self, seed: int = None, options=None, **kwargs):
         self.grid = np.asarray(GRIDS[self.grid_key])
         if self.random_goals:
             self._randomize_goals()
+        if self.tile_goal:
+            self._tile_goal(options.get("tile_index", 0), options.get("tile_length", 2), options.get("tile_offset", 0))
         if self.start_pos is None:
             self._randomize_agent_pos()
         else:

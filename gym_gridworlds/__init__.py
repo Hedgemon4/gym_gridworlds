@@ -224,6 +224,17 @@ register(
 )
 
 register(
+    id="Gym-Gridworlds/FourRooms-NoGoal-RandomStart-13x13-v0",
+    entry_point="gym_gridworlds.gridworld:Gridworld",
+    max_episode_steps=50,
+    kwargs={
+        "grid": "13x13_four_rooms_no_goal",
+        "no_stay": True,
+        "start_pos": None,  # random
+    },
+)
+
+register(
     id="Gym-Gridworlds/FourRooms-NoGoal-TopLeftStart-13x13-v0",
     entry_point="gym_gridworlds.gridworld:Gridworld",
     max_episode_steps=50,

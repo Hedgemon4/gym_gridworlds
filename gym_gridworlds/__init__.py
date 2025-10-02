@@ -195,8 +195,8 @@ register(
     kwargs={
         "grid": "13x13_four_rooms_original",
         "no_stay": True,
-        "start_pos": None,  # random
-        "random_goals": True,
+        "start_pos": (1, 1),  # random
+        "random_goals": False,
     },
 )
 
